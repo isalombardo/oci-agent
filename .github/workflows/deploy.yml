@@ -1,0 +1,49 @@
+name: Build and Push OCI Agent
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: oci-agent
+  REPO_PATH: agents/oci-agent
+  REGISTRY_HOST: ocir.us-ashburn-1.oci.oraclecloud.com
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Docker Login
+        env:
+          OCI_USERNAME: ${{ secrets.OCI_USERNAME }}
+          OCI_AUTH_TOKEN: ${{ secrets.OCI_AUTH_TOKEN }}
+          OCI_TENANCY_NAMESPACE: ${{ secrets.OCI_TENANCY_NAMESPACE }}
+        run: |
+          echo "$OCI_AUTH_TOKEN" | docker login "$REGISTRY_HOST" \
+            -u "$OCI_TENANCY_NAMESPACE/$OCI_USERNAME" \
+            --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t $IMAGE_NAME:${{ github.sha }} .
+
+      - name: Tag Docker image
+        env:
+          OCI_TENANCY_NAMESPACE: ${{ secrets.OCI_TENANCY_NAMESPACE }}
+        run: |
+          docker tag $IMAGE_NAME:${{ github.sha }} \
+          $REGISTRY_HOST/$OCI_TENANCY_NAMESPACE/$REPO_PATH:${{ github.sha }}
+
+      - name: Push Docker image
+        env:
+          OCI_TENANCY_NAMESPACE: ${{ secrets.OCI_TENANCY_NAMESPACE }}
+        run: |
+          docker push \
+          $REGISTRY_HOST/$OCI_TENANCY_NAMESPACE/$REPO_PATH:${{ github.sha }}
