@@ -20,13 +20,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Docker Login
+      - name: Log in to OCIR
         env:
           OCI_USERNAME: ${{ secrets.OCI_USERNAME }}
           OCI_AUTH_TOKEN: ${{ secrets.OCI_AUTH_TOKEN }}
           OCI_TENANCY_NAMESPACE: ${{ secrets.OCI_TENANCY_NAMESPACE }}
         run: |
-          echo "$OCI_AUTH_TOKEN" | docker login "$REGISTRY_HOST" \
+          printf '%s' "$OCI_AUTH_TOKEN" | docker login "$REGISTRY_HOST" \
             -u "$OCI_TENANCY_NAMESPACE/$OCI_USERNAME" \
             --password-stdin
 
