@@ -9,7 +9,7 @@ on:
 env:
   IMAGE_NAME: oci-agent
   REPO_PATH: agents/oci-agent
-  REGISTRY_HOST: ocir.sa-saopaulo-1.oci.oraclecloud.com
+  REGISTRY_HOST: ocir.us-ashburn-1.oci.oraclecloud.com
 
 jobs:
   build-and-push:
